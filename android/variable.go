@@ -20,8 +20,11 @@ import (
 	"runtime"
 	"strings"
 
+<<<<<<< HEAD
 	"fuse/soong/android"
 
+=======
+>>>>>>> 88133a82... soong: Drop custom soong product variables
 	"github.com/google/blueprint/proptools"
 )
 
@@ -133,9 +136,12 @@ type variableProperties struct {
 			Srcs         []string `android:"arch_variant"`
 			Exclude_srcs []string `android:"arch_variant"`
 		} `android:"arch_variant"`
+<<<<<<< HEAD
 
 		// include Fuse variables
 		Fuse android.Product_variables
+=======
+>>>>>>> 88133a82... soong: Drop custom soong product variables
 	} `android:"arch_variant"`
 }
 
@@ -341,9 +347,12 @@ type productVariables struct {
 	InstallExtraFlattenedApexes *bool `json:",omitempty"`
 
 	BoardUsesRecoveryAsBoot *bool `json:",omitempty"`
+<<<<<<< HEAD
 
 	// include Fuse variables
 	Fuse android.ProductVariables
+=======
+>>>>>>> 88133a82... soong: Drop custom soong product variables
 }
 
 func boolPtr(v bool) *bool {
@@ -412,23 +421,15 @@ func VariableMutator(mctx BottomUpMutatorContext) {
 	}
 
 	variableValues := reflect.ValueOf(a.variableProperties).Elem().FieldByName("Product_variables")
-	valStruct := reflect.ValueOf(mctx.Config().productVariables)
 
-	doVariableMutation(mctx, a, variableValues, valStruct)
-}
-
-func doVariableMutation(mctx BottomUpMutatorContext, a *ModuleBase, variableValues reflect.Value, valStruct reflect.Value) {
 	for i := 0; i < variableValues.NumField(); i++ {
 		variableValue := variableValues.Field(i)
 		name := variableValues.Type().Field(i).Name
 		property := "product_variables." + proptools.PropertyNameForField(name)
 
 		// Check that the variable was set for the product
-		val := valStruct.FieldByName(name)
-		if val.IsValid() && val.Kind() == reflect.Struct {
-			doVariableMutation(mctx, a, variableValue, val)
-			continue
-		} else if !val.IsValid() || val.Kind() != reflect.Ptr || val.IsNil() {
+		val := reflect.ValueOf(mctx.Config().productVariables).FieldByName(name)
+		if !val.IsValid() || val.Kind() != reflect.Ptr || val.IsNil() {
 			continue
 		}
 
@@ -600,11 +601,6 @@ func createVariableProperties(moduleTypeProps []interface{}, productVariables in
 func createVariablePropertiesType(moduleTypeProps []interface{}, productVariables interface{}) reflect.Type {
 	typ, _ := proptools.FilterPropertyStruct(reflect.TypeOf(productVariables),
 		func(field reflect.StructField, prefix string) (bool, reflect.StructField) {
-			if strings.HasPrefix(prefix, "Product_variables.Fuse") {
-				// Convert Product_variables.Fuse.Foo to Fuse.Foo
-				_, prefix = splitPrefix(prefix)
-			}
-
 			// Filter function, returns true if the field should be in the resulting struct
 			if prefix == "" {
 				// Keep the top level Product_variables field
